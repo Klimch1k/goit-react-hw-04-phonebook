@@ -3,12 +3,7 @@ import PropTypes from 'prop-types';
 const Filter = ({ formFilter, filter }) => {
   return (
     <>
-      <input
-        type="text"
-        name="filter"
-        value={filter}
-        onInput={event => formFilter(event.target.value)}
-      />
+      <input type="text" name="filter" value={filter} onInput={formFilter} />
     </>
   );
 };

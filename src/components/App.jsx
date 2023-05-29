@@ -1,43 +1,39 @@
-import React, { Component } from 'react';
+import  { useState, useEffect } from 'react';
 import ContactsForm from './ContactsForm/ContactsForm';
 import ContactList from './ContactsList/ContactsList';
 import Filter from './Filter/Filter';
 import { Container, Title } from './App.styled';
 import shortid from 'shortid';
 
-export default class App extends Component {
-  state = {
-    contacts: [
+
+export default function App() {
+const [contacts, setContacts] = useState(() => {
+  return (
+    JSON.parse(window.localStorage.getItem('contacts')) ?? [
       { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
       { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
       { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+    ]
+  );
+});
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const contactsFromLocalStorage = localStorage.getItem('contacts');
+  
 
-    if (contactsFromLocalStorage) {
-      this.setState({ contacts: JSON.parse(contactsFromLocalStorage) });
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  formFilter = filter => {
-    this.setState({ filter });
-  };
+const formFilter = e => {
+    const { value } = e.currentTarget;
+    setFilter(value);}
 
-  filteredContacts = () => {
-    const { contacts, filter } = this.state;
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase()))
 
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
-    );
-  };
-
-  formSubmitHandler = data => {
-    const contains = this.state.contacts.some(({ name }) => {
+  const formSubmitHandler = data => {
+    const contains = contacts.some(({ name }) => {
       return name.toLowerCase() === data.name.toLowerCase();
     });
     if (contains) {
@@ -50,37 +46,22 @@ export default class App extends Component {
       number: data.number,
     };
    
-    const updatedContacts = [...this.state.contacts, newContact];
-
-    this.setState({
-      contacts: updatedContacts,
-    });
-
-    localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+    const updatedContacts = [...contacts, newContact];
+    setContacts(updatedContacts);
+   
   };
 
-  onDeleteContacts = contactsId => {
-    const { contacts } = this.state;
-
+  const onDeleteContacts = contactsId => {
     const updatedContacts = contacts.filter(
       contact => contact.id !== contactsId
     );
 
-    this.setState({ contacts: updatedContacts });
+    setContacts(updatedContacts);
 
-    localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+    
   };
 
-  render() {
-    const { filter } = this.state;
-    const {
-      filteredContacts,
-      formFilter,
-      formSubmitHandler,
-      onDeleteContacts,
-    } = this;
-
-    return (
+   return (
       <>
         <Container>
           <Title>Phonebook</Title>
@@ -93,11 +74,10 @@ export default class App extends Component {
           <h3>Find contacts by name</h3>
           <Filter filter={filter} formFilter={formFilter} />
           <ContactList
-            contacts={filteredContacts()}
+            contacts={filteredContacts}
             onDeleteContacts={onDeleteContacts}
           />
         </Container>
       </>
     );
-  }
 }
